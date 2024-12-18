@@ -1,47 +1,54 @@
-const connectToMongo = require("./Database/db.js")
+const connectToMongo = require("./Database/db.js");
 const express = require("express");
 const app = express();
-const path = require("path")
+const path = require("path");
+const cors = require("cors");
+
 connectToMongo();
 const port = process.env.PORT || 5000;
-var cors = require("cors");
 
+// Updated CORS options
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || process.env.NODE_ENV === 'development') {
-     
-      callback(null, true);
-    } else if (origin === "http://localhost:3000") {
-     
-      callback(null, true);
+    const allowedOrigins = [
+      "http://localhost:3000", // For local development
+      "https://college-project-frontend-code.vercel.app", // Deployed frontend URL
+    ];
+
+    if (!origin || process.env.NODE_ENV === "development") {
+      callback(null, true); // Allow all origins in development
+    } else if (allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow specific origins
     } else {
-   
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS")); // Block everything else
     }
   },
-  credentials: true, 
+  credentials: true, // Allow credentials (cookies, authorization headers)
 };
 
 app.use(cors(corsOptions));
 
-app.use(express.json()); 
+// Middleware
+app.use(express.json());
 
+// Routes
 app.get("/", (req, res) => {
-  res.send("Hello, All are working f9")
-})
+  res.send("Hello, All are working fine");
+});
 
-app.use('/media', express.static(path.join(__dirname, 'media')));
+app.use("/media", express.static(path.join(__dirname, "media")));
 
-
-// Credential Apis
+// Credential APIs
 app.use("/api/student/auth", require("./routes/Student Api/credential.route"));
 app.use("/api/faculty/auth", require("./routes/Faculty Api/credential.route"));
 app.use("/api/admin/auth", require("./routes/Admin Api/credential.route"));
-// Details Apis
+
+// Details APIs
 app.use("/api/student/details", require("./routes/Student Api/details.route"));
 app.use("/api/faculty/details", require("./routes/Faculty Api/details.route"));
 app.use("/api/admin/details", require("./routes/Admin Api/details.route"));
-// Other Apis
+
+// Other APIs
 app.use("/api/timetable", require("./routes/Other Api/timetable.route"));
 app.use("/api/material", require("./routes/Other Api/material.route"));
 app.use("/api/notice", require("./routes/Other Api/notice.route"));
@@ -49,6 +56,7 @@ app.use("/api/subject", require("./routes/Other Api/subject.route"));
 app.use("/api/marks", require("./routes/Other Api/marks.route"));
 app.use("/api/branch", require("./routes/Other Api/branch.route"));
 
+// Start server
 app.listen(port, () => {
   console.log(`Server Listening On http://localhost:${port}`);
 });
